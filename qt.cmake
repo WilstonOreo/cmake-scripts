@@ -34,7 +34,13 @@ MACRO(find_qt5_component COMPONENT_NAME)
   set(Qt5${COMPONENT_NAME}_DIR ${QT_LIBRARY_DIR}/cmake/Qt5${COMPONENT_NAME} )
   find_package(Qt5${COMPONENT_NAME} REQUIRED)
 
-  set(Qt5_LIBRARIES ${Qt5_LIBRARIES} Qt5::${COMPONENT_NAME})
+  if("${Qt5_LIBRARIES}" STREQUAL "")
+    set(Qt5_LIBRARIES Qt5::${COMPONENT_NAME})
+  else()
+    set(Qt5_LIBRARIES ${Qt5_LIBRARIES} Qt5::${COMPONENT_NAME})
+  endif()
+
+
 
   IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     include_directories(${Qt5${COMPONENT_NAME}_INCLUDE_DIRS})
@@ -42,13 +48,63 @@ MACRO(find_qt5_component COMPONENT_NAME)
 
   IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     include_directories(${QT_INCLUDE_DIR}/Qt${COMPONENT_NAME})
+
+
+    # Set module as install target
+    INSTALL(FILES
+        "${QT_LIBRARY_DIR}/libQt5${COMPONENT_NAME}.so.${QT_VERSION}.0"
+        RENAME "libQt5${COMPONENT_NAME}.so.${QT_MAJOR_VERSION}"
+        DESTINATION share/${CMAKE_PROJECT_NAME}/lib
+    )
   ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
   if (${COMPONENT_NAME} MATCHES "Widgets")
     set(Qt5${COMPONENT_NAME}_UIC_EXECUTABLE ${QT5_LOCATION}/bin/uic)
   endif (${COMPONENT_NAME} MATCHES "Widgets")
 
+
 ENDMACRO(find_qt5_component COMPONENT_NAME)
+
+MACRO (deploy_qt)
+   IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    FOREACH(LIB icui18n icuuc icudata )
+        INSTALL(FILES
+            "${QT_LIBRARY_DIR}/lib${LIB}.so.${QT_MAJOR_VERSION}${QT_MINOR_VERSION}.1"
+            RENAME "lib${LIB}.so.${QT_MAJOR_VERSION}${QT_MINOR_VERSION}"
+            DESTINATION share/${CMAKE_PROJECT_NAME}/lib
+        )
+    ENDFOREACH(LIB)
+
+    # X Server support
+    INSTALL(FILES ${QT_LIBRARY_DIR}/../plugins/platforms/libqxcb.so
+	DESTINATION share/${CMAKE_PROJECT_NAME}/plugins/platforms )
+    INSTALL(FILES ${QT_LIBRARY_DIR}/../plugins/xcbglintegrations/libqxcb-egl-integration.so
+        PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+                    GROUP_EXECUTE GROUP_READ
+		    WORLD_EXECUTE WORLD_READ
+	DESTINATION share/${CMAKE_PROJECT_NAME}/plugins/xcbglintegrations )
+
+    INSTALL(FILES ${QT_LIBRARY_DIR}/../plugins/xcbglintegrations/libqxcb-glx-integration.so
+
+        PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+                    GROUP_EXECUTE GROUP_READ
+		    WORLD_EXECUTE WORLD_READ
+	DESTINATION share/${CMAKE_PROJECT_NAME}/plugins/xcbglintegrations
+	)
+
+        INSTALL(FILES
+            "${QT_LIBRARY_DIR}/libQt5XcbQpa.so.${QT_VERSION}.0"
+            RENAME "libQt5XcbQpa.so.${QT_MAJOR_VERSION}"
+            DESTINATION share/${CMAKE_PROJECT_NAME}/lib
+        )
+
+        INSTALL(FILES
+            "${QT_LIBRARY_DIR}/libQt5DBus.so.${QT_VERSION}.0"
+            RENAME "libQt5DBus.so.${QT_MAJOR_VERSION}"
+            DESTINATION share/${CMAKE_PROJECT_NAME}/lib
+        )
+  ENDIF()
+ENDMACRO (deploy_qt)
 
 MACRO (detect_qt)
     UNSET(QT5_LOCATION)
@@ -56,6 +112,7 @@ MACRO (detect_qt)
     IF(NOT QT_PATH)
         set(QT_PATHS "")
         list(APPEND QT_PATHS "${CMAKE_SOURCE_DIR}/../Qt")
+        list(APPEND QT_PATHS "${CMAKE_SOURCE_DIR}/../../Qt")
         list(APPEND QT_PATHS "$ENV{HOME}/Qt")
     ELSEIF()
         set(QT_PATHS "${QT_PATH}")
@@ -63,36 +120,37 @@ MACRO (detect_qt)
 
     message(STATUS ${QT_PATHS})
 
-    IF(NOT DEFINED ${QT_VERSION})
+    IF(NOT DEFINED ${QT_MINOR_VERSION})
         # Default versions to test
-        set(QT_VERSIONS "5.5;5.4;5.3;5.6;5.7")
+        set(QT_VERSIONS "6;5;7")
     ELSEIF()
-        set(QT_VERSIONS ${QT_VERSION})
+        set(QT_VERSIONS ${QT_MINOR_VERSION})
     ENDIF()
 
     # Scan through list of candidate paths
     foreach(_PATH ${QT_PATHS})
-        if (NOT EXISTS ${_PATH})
-            continue()
-        endif()
-
-        # Scan though list of available version
+        if (EXISTS ${_PATH})
+	# Scan though list of available version
         foreach(_VERSION ${QT_VERSIONS})
             if(NOT QT_FOUND)
-                MESSAGE(STATUS "Searching for Qt ${_VERSION} in ${_PATH}")
-                setup_qt(${_VERSION} ${_PATH})
+                MESSAGE(STATUS "Searching for Qt5.${_VERSION} in ${_PATH}")
+                setup_qt(5 ${_VERSION} ${_PATH})
             endif()
         endforeach()
+        endif()
+
     endforeach()
 ENDMACRO()
 
-
 # Qt5 Setup
-MACRO(setup_qt VERSION FOLDER)
+MACRO(setup_qt MAJOR_VERSION MINOR_VERSION FOLDER)
     SET(_moc ${CMAKE_SOURCE_DIR}/moc )
 
   SET(QT_FOUND FALSE)
-  SET(QT_VERSION ${VERSION})
+  SET(QT_PATH ${FOLDER})
+  SET(QT_MINOR_VERSION ${MINOR_VERSION})
+  SET(QT_MAJOR_VERSION ${MAJOR_VERSION})
+  SET(QT_VERSION "${MAJOR_VERSION}.${MINOR_VERSION}")
 
   IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(QT5_LOCATION "${FOLDER}/${QT_VERSION}/clang_64")
@@ -134,18 +192,29 @@ MACRO(setup_qt VERSION FOLDER)
     # We need add -DQT_WIDGETS_LIB when using QtWidgets in Qt 5.
     add_definitions(${Qt5Widgets_DEFINITIONS})
 
-
     set(QT_FOUND TRUE)
   elseif()
     unset(QT5_LOCATION)
   endif()
 
-ENDMACRO(setup_qt MAJOR_VERSION MINOR_VERSION)
 
+ENDMACRO()
 
 IF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+  ADD_DEFINITIONS("-DQT_DEBUG")
 ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 
 IF(${CMAKE_BUILD_TYPE} MATCHES "Release")
   ADD_DEFINITIONS("-DQT_NO_DEBUG_OUTPUT -DQT_NO_WARNING_OUTPUT")
 ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Release")
+
+################################
+if(DEFINED QT_PATH)
+    setup_qt(5 6 ${QT_PATH})
+else()
+    detect_qt()
+endif()
+
+if(NOT QT_FOUND)
+    MESSAGE(FATAL_ERROR "Qt Framework was not found. You might set QT_PATH manually.")
+endif()

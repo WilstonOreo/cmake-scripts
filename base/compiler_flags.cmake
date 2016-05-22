@@ -1,16 +1,4 @@
 
-MACRO(set_version_string dir)
-  SET(version_script "${dir}/generate-version.sh")
-  IF(EXISTS "${version_script}")
-    execute_process(COMMAND $ENV{SHELL} ${version_script}
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-        OUTPUT_VARIABLE BUILD_VERSION)
-    STRING(STRIP "${BUILD_VERSION}" BUILD_VERSION)
-    ADD_DEFINITIONS(-D__GITVERSIONSTRING__="${BUILD_VERSION}")
-    MESSAGE(STATUS "Build version is ${BUILD_VERSION}")
-  ENDIF(EXISTS "${version_script}")
-ENDMACRO(set_version_string dir)
-
 MACRO(common_cxx_flags)
   ADD_DEFINITIONS(-fPIC -fsigned-char -Wall -Wno-missing-braces)
 
@@ -42,3 +30,5 @@ MACRO(common_cxx_flags)
     ADD_DEFINITIONS(-ferror-limit=5 -fcolor-diagnostics -fdiagnostics-show-template-tree  -Wno-deprecated )
   ENDIF()
 ENDMACRO(common_cxx_flags)
+
+common_cxx_flags()
