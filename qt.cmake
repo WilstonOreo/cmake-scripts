@@ -78,12 +78,11 @@ MACRO(find_qt5_component COMPONENT_NAME)
   IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     include_directories(${QT_INCLUDE_DIR}/Qt${COMPONENT_NAME})
 
-
     # Set module as install target
     INSTALL(FILES
         "${QT_LIBRARY_DIR}/libQt5${COMPONENT_NAME}.so.${QT_VERSION}.0"
         RENAME "libQt5${COMPONENT_NAME}.so.${QT_MAJOR_VERSION}"
-        DESTINATION share/${CMAKE_PROJECT_NAME}/lib
+        DESTINATION ${CM8KR_INSTALL_PATH}/lib
     )
   ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
@@ -96,41 +95,34 @@ ENDMACRO(find_qt5_component COMPONENT_NAME)
 
 MACRO (deploy_qt)
    IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    FOREACH(LIB icui18n icuuc icudata )
-        INSTALL(FILES
-            "${QT_LIBRARY_DIR}/lib${LIB}.so.${QT_MAJOR_VERSION}${QT_MINOR_VERSION}.1"
-            RENAME "lib${LIB}.so.${QT_MAJOR_VERSION}${QT_MINOR_VERSION}"
-            DESTINATION share/${CMAKE_PROJECT_NAME}/lib
-        )
-    ENDFOREACH(LIB)
 
     # X Server support
     INSTALL(FILES ${QT_LIBRARY_DIR}/../plugins/platforms/libqxcb.so
-	DESTINATION share/${CMAKE_PROJECT_NAME}/plugins/platforms )
+	      DESTINATION ${CM8KR_INSTALL_PATH}/plugins/platforms )
     INSTALL(FILES ${QT_LIBRARY_DIR}/../plugins/xcbglintegrations/libqxcb-egl-integration.so
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
                     GROUP_EXECUTE GROUP_READ
 		    WORLD_EXECUTE WORLD_READ
-	DESTINATION share/${CMAKE_PROJECT_NAME}/plugins/xcbglintegrations )
+  	DESTINATION ${CM8KR_INSTALL_PATH}/plugins/xcbglintegrations )
 
     INSTALL(FILES ${QT_LIBRARY_DIR}/../plugins/xcbglintegrations/libqxcb-glx-integration.so
 
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
                     GROUP_EXECUTE GROUP_READ
 		    WORLD_EXECUTE WORLD_READ
-	DESTINATION share/${CMAKE_PROJECT_NAME}/plugins/xcbglintegrations
+	DESTINATION ${CM8KR_INSTALL_PATH}/plugins/xcbglintegrations
 	)
 
         INSTALL(FILES
             "${QT_LIBRARY_DIR}/libQt5XcbQpa.so.${QT_VERSION}.0"
             RENAME "libQt5XcbQpa.so.${QT_MAJOR_VERSION}"
-            DESTINATION share/${CMAKE_PROJECT_NAME}/lib
+            DESTINATION ${CM8KR_INSTALL_PATH}/lib
         )
 
         INSTALL(FILES
             "${QT_LIBRARY_DIR}/libQt5DBus.so.${QT_VERSION}.0"
             RENAME "libQt5DBus.so.${QT_MAJOR_VERSION}"
-            DESTINATION share/${CMAKE_PROJECT_NAME}/lib
+            DESTINATION ${CM8KR_INSTALL_PATH}/lib
         )
   ENDIF()
 ENDMACRO (deploy_qt)
@@ -196,9 +188,17 @@ MACRO(setup_qt MAJOR_VERSION MINOR_VERSION FOLDER)
   set(QT_UIC_EXECUTABLE "${QT5_LOCATION}/bin/uic" )
   set(QT_INCLUDE_DIR "${QT5_LOCATION}/include" )
   set(QT_LIBRARY_DIR "${QT5_LOCATION}/lib" )
+  
+  FOREACH(LIB icui18n icuuc icudata ) 
+        MESSAGE(STATUS  "${QT_LIBRARY_DIR}/lib${LIB}.so.${QT_MAJOR_VERSION}${QT_MINOR_VERSION}.1")
+        INSTALL(FILES
+            "${QT_LIBRARY_DIR}/lib${LIB}.so.${QT_MAJOR_VERSION}${QT_MINOR_VERSION}"
+            RENAME "lib${LIB}.so.${QT_MAJOR_VERSION}${QT_MINOR_VERSION}"
+            DESTINATION ${CM8KR_INSTALL_PATH}/lib
+        )
+    ENDFOREACH(LIB)
 
   if(IS_DIRECTORY ${QT5_LOCATION})
-    set(QT_VERSION "${VERSION}")
     MESSAGE(STATUS "Using Qt ${QT_VERSION}")
 
     if (NOT DEFINED QT_MODULES)
@@ -225,8 +225,7 @@ MACRO(setup_qt MAJOR_VERSION MINOR_VERSION FOLDER)
   elseif()
     unset(QT5_LOCATION)
   endif()
-
-
+ 
 ENDMACRO()
 
 IF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
@@ -247,3 +246,4 @@ endif()
 if(NOT QT_FOUND)
     MESSAGE(FATAL_ERROR "Qt Framework was not found. You might set QT_PATH manually.")
 endif()
+
