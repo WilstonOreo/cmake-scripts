@@ -27,7 +27,8 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ################################################################################
 
-# Adds a git submodule which also uses CMake as build system
+# Adds a git submodule which also uses cm8kr as build system
+# It loads a build.cmake with exported files if present
 MACRO(cm8kr_add_submodule module_path)
   # Disable INTERFACE_LINK_LIBRARIES warning
   cmake_policy(SET CMP0022 OLD)
@@ -36,14 +37,16 @@ MACRO(cm8kr_add_submodule module_path)
 
   # Add submodule only if we are in the project root folder
   if (${CMAKE_SOURCE_DIR} MATCHES ${PROJECT_SOURCE_DIR})
-    MESSAGE(STATUS "--- Adding submodule ${module_path}")
+    MESSAGE("Adding submodule ${module_path}")
 
     INCLUDE_DIRECTORIES(
       ${abs_module_path}/include
       ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${module_path}
     )
-    add_subdirectory(${abs_module_path} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${module_path})
-    # Add include directories for submodule
+    # Include build.cmake file
+    if(EXISTS ${abs_module_path}/build.cmake)
+      include(${abs_module_path}/build.cmake)
+    endif()
   endif()
 
 ENDMACRO()

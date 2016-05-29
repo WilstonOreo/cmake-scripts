@@ -176,8 +176,8 @@ if ("${CM8KR_PATH}" STREQUAL "")
 endif()
 
 # Import macro for convenient loading of cmake files
-# Usage: import(cmakefile1 cmakefile2)
-# File extension "cmake" is appended automaticcly
+# Usage: cm8kr_import(cmakefile1 cmakefile2)
+# File extension "cmake" is appended automatically
 MACRO (cm8kr_import ${ARGN})
     # Cannot use ARGN directly with list() command.
     # Copy to a variable first.
@@ -199,6 +199,11 @@ cm8kr_import(
   base/add_submodule
 )
 
+# Include build cmake for including exported symbols
+if(EXISTS ${abs_module_path}/build.cmake)
+  include(${abs_module_path}/build.cmake)
+endif()
+
 include_directories(BEFORE
-  ${PROJECT_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR}/include
 )
