@@ -27,9 +27,10 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ################################################################################
 
-IF(NOT DEFINED OPENMESH_PATH)
-    SET(OPENMESH_PATH ${CMAKE_SOURCE_DIR}/../OpenMesh)
-ENDIF()
+cm8kr_option(
+    OPENMESH_PATH "Path to OpenMesh source" 
+    ${CMAKE_SOURCE_DIR}/../OpenMesh
+)
 
 set(OPENMESH_LIBRARY_PATH ${OPENMESH_PATH}/build/Build/lib)
 set(OPENMESH_INCLUDE_PATH ${OPENMESH_PATH}/src)

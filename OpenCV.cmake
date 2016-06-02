@@ -27,8 +27,10 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ################################################################################
 
+option(OPENCV_PATH "Path to OpenCV source" ${CMAKE_SOURCE_DIR}/../opencv-3.0.0)
+
 MACRO(cm8kr_setup_opencv_module module_name)
-    include_directories(${OPENCV_ROOT}/modules/${module_name}/include )
+    include_directories(${OPENCV_PATH}/modules/${module_name}/include )
     set(OPENCV_${module_name}_LIB ${OPENCV_LIBRARY_PATH}/libopencv_${module_name}.dylib)
 
     if(${module_name} STREQUAL "hal")
@@ -37,9 +39,6 @@ MACRO(cm8kr_setup_opencv_module module_name)
 ENDMACRO()
 
 
-IF(NOT DEFINED OPENCV_ROOT)
-  SET(OPENCV_ROOT ${CMAKE_SOURCE_DIR}/../opencv-3.0.0)
-ENDIF()
 
 set(OPENCV_LIBRARY_PATH ${OPENCV_ROOT}/lib)
 set(OPENCV_INCLUDE_PATH ${OPENCV_ROOT}/include)

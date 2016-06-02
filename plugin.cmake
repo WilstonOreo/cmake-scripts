@@ -27,9 +27,18 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ################################################################################
 
-if ("${CM8KR_PLUGIN_PATH}" STREQUAL "")
-  set(CM8KR_PLUGIN_PATH ${CMAKE_SOURCE_DIR}/src/plugins )
-endif()
+cm8kr_option(CM8KR_PLUGIN_PATH 
+  "Plugin source directory"
+  ${CMAKE_SOURCE_DIR}/src/plugins )
+
+cm8kr_option(CM8KR_PLUGIN_OUTPUT_PATH 
+  "Plugin binary output path" "" )
+
+cm8kr_option(CM8KR_PLUGIN_EXTENSION
+  "Plugin binary file extension" "" )
+
+cm8kr_option(CM8KR_PLUGIN_DEFAULT_LIBRARIES 
+  "Plugin default libraries" "")
 
 function(cm8kr_build_plugin BUILD_TARGET SOURCE_PATH)
     IF(NOT CM8KR_PLUGIN_OUTPUT_PATH) # If MacOSX,
@@ -46,7 +55,7 @@ function(cm8kr_build_plugin BUILD_TARGET SOURCE_PATH)
 
     set(PLUGIN_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE})
 
-    if(CM8KR_PLUGIN_OUTPUT_PATH)
+    if(NOT "${CM8KR_PLUGIN_OUTPUT_PATH}" STREQUAL "")
       SET_TARGET_PROPERTIES(${BUILD_TARGET}
         PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CM8KR_PLUGIN_OUTPUT_PATH}
@@ -54,7 +63,7 @@ function(cm8kr_build_plugin BUILD_TARGET SOURCE_PATH)
       )
     endif()
 
-    if(CM8KR_PLUGIN_EXTENSION)
+    if(NOT "${CM8KR_PLUGIN_EXTENSION}" STREQUAL "")
       SET_TARGET_PROPERTIES(${BUILD_TARGET}
         PROPERTIES
         SUFFIX ".${CM8KR_PLUGIN_EXTENSION}"

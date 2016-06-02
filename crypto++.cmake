@@ -27,11 +27,9 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ################################################################################
 
-if(NOT DEFINED cryptopp_DIRECTORY)
-  set(cryptopp_DIRECTORY ${CMAKE_SOURCE_DIR}/../cryptopp )
-endif()
+cm8kr_option(cryptopp_PATH "Path to crypto++ source code" ${CMAKE_SOURCE_DIR}/../cryptopp )
 
-link_directories(${cryptopp_DIRECTORY})
-include_directories(${cryptopp_DIRECTORY})
+link_directories(${cryptopp_PATH})
+include_directories(${cryptopp_PATH})
 
 set(cryptopp_LIBRARIES cryptopp)

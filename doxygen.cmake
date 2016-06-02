@@ -31,7 +31,7 @@
 FIND_PACKAGE(Doxygen)
 
 IF(DOXYGEN_FOUND MATCHES YES)
-  SET(DOXYGEN_FILE_ABS_PATH ${CMAKE_PROJECT_DOC_DIR}/${PROJECT_NAME}.doxygen)
+  cm8kr_option(DOXYGEN_FILE_ABS_PATH "Path of Doxygen file" ${CMAKE_PROJECT_DOC_DIR}/${PROJECT_NAME}.doxygen) 
 
   if (EXISTS ${DOXYGEN_FILE_ABS_PATH})
     CONFIGURE_FILE(${DOXYGEN_FILE_ABS_PATH} ${CMAKE_PROJECT_DOC_DIR} @ONLY)
@@ -42,7 +42,7 @@ IF(DOXYGEN_FOUND MATCHES YES)
     )
     MESSAGE(STATUS "Doxygen is setup. Use 'make doc' to generate documentation.")
   ELSE()
-    MESSAGE(WARNING "Could not setup Doxygen!")
+    MESSAGE(WARNING "Could not setup Doxygen since doxygen file ${DOXYGEN_FILE_ABS_PATH} does not exist!")
 
   endif()
 ENDIF()

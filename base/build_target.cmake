@@ -52,14 +52,18 @@ MACRO(cm8kr_setup_build_target BUILD_TARGET SOURCE_PATH)
       ${${BUILD_TARGET}_INCLUDE}/*.hpp
     )
   endif()
+  
+  if (NOT ${BUILD_TARGET}_CPP_SOURCES)
+    FILE(GLOB_RECURSE ${BUILD_TARGET}_CPP_SOURCES
+      ${SOURCE_PATH}/*.cpp
+      ${SOURCE_PATH}/*.h
+      ${SOURCE_PATH}/*.hpp
+    )
+  endif()
 
-  FILE(GLOB_RECURSE ${BUILD_TARGET}_CPP_SOURCES
-    ${SOURCE_PATH}/*.cpp
-    ${SOURCE_PATH}/*.h
-    ${SOURCE_PATH}/*.hpp
-  )
-
-  SET(${BUILD_TARGET}_SOURCES ${${BUILD_TARGET}_CPP_SOURCES} )
+  SET(${BUILD_TARGET}_SOURCES 
+    ${${BUILD_TARGET}_SOURCES} 
+    ${${BUILD_TARGET}_CPP_SOURCES} )
 
   # On MacOSX, look for ObjectiveC and Objective-C++ sources
   IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") # If mac os x
@@ -161,6 +165,10 @@ ENDMACRO()
 
 MACRO(cm8kr_mainapp BUILD_TARGET)
   SET(${BUILD_TARGET}_IS_MAIN_APP YES)
+
+  # Set main include dir headers source as build target sources
+  SET(${BUILD_TARGET}_SOURCES ${${CMAKE_PROJECT_NAME}_HEADER_SOURCES})
+
   include_directories(${CM8KR_MAINAPP_SOURCE_PATH})
   cm8kr_add_executable(${BUILD_TARGET} ${CM8KR_MAINAPP_SOURCE_PATH})
 
