@@ -30,33 +30,12 @@
 # Qt Setup
 include(CMakeParseArguments)
 
-# qt5_wrap_ui(outfiles inputfile ... )
-function(QT5_GENERATE_UI outfiles )
-    set(options)
-    set(oneValueArgs)
-    set(multiValueArgs OPTIONS)
+# Qt major version, default is 5
+cm8kr_option(QT_MAJOR_VERSION "Qt Major Version" 5 )
 
-    cmake_parse_arguments(_WRAP_UI "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    set(ui_files ${_WRAP_UI_UNPARSED_ARGUMENTS})
-    set(ui_options ${_WRAP_UI_OPTIONS})
-
-    foreach(it ${ui_files})
-        get_filename_component(outfile ${it} NAME_WE)
-        get_filename_component(infile ${it} ABSOLUTE)
-        set(outfile ${CMAKE_SOURCE_DIR}/moc/ui_${outfile}.h)
-
-        add_custom_command(OUTPUT ${outfile}
-          COMMAND ${Qt5Widgets_UIC_EXECUTABLE}
-          ARGS ${ui_options} -o ${outfile} ${infile}
-         MAIN_DEPENDENCY ${infile} VERBATIM)
-       execute_process(COMMAND ${QT_UIC_EXECUTABLE} ${ui_options} -o ${outfile} ${infile}
-         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-        list(APPEND ${outfiles} ${outfile})
-    endforeach()
-    set(${outfiles} ${${outfiles}} PARENT_SCOPE)
-endfunction()
-
+# Qt Minor version, default is 6
+cm8kr_option(QT_MINOR_VERSION "Qt Minor Version" 6 )
+cm8kr_option(QT_PATH "Qt Path" "$ENV{HOME}/Qt" )
 
 MACRO(find_qt5_component COMPONENT_NAME)
 
@@ -68,8 +47,6 @@ MACRO(find_qt5_component COMPONENT_NAME)
   else()
     set(Qt5_LIBRARIES ${Qt5_LIBRARIES} Qt5::${COMPONENT_NAME})
   endif()
-
-
 
   IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     include_directories(${Qt5${COMPONENT_NAME}_INCLUDE_DIRS})
@@ -87,7 +64,7 @@ MACRO(find_qt5_component COMPONENT_NAME)
   ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
   if (${COMPONENT_NAME} MATCHES "Widgets")
-    set(Qt5${COMPONENT_NAME}_UIC_EXECUTABLE ${QT5_LOCATION}/bin/uic)
+    set(Qt5${COMPONENT_NAME}_UIC_EXECUTABLE ${Qt5_LOCATION}/bin/uic)
   endif (${COMPONENT_NAME} MATCHES "Widgets")
 
 
@@ -127,70 +104,29 @@ MACRO (deploy_qt)
   ENDIF()
 ENDMACRO (deploy_qt)
 
-MACRO (detect_qt)
-    UNSET(QT5_LOCATION)
-
-    IF(NOT QT_PATH)
-        set(QT_PATHS "")
-        list(APPEND QT_PATHS "${CMAKE_SOURCE_DIR}/../Qt")
-        list(APPEND QT_PATHS "${CMAKE_SOURCE_DIR}/../../Qt")
-        list(APPEND QT_PATHS "$ENV{HOME}/Qt")
-    ELSEIF()
-        set(QT_PATHS "${QT_PATH}")
-    ENDIF()
-
-    message(STATUS ${QT_PATHS})
-
-    IF(NOT DEFINED ${QT_MINOR_VERSION})
-        # Default versions to test
-        set(QT_VERSIONS "6;5;7")
-    ELSEIF()
-        set(QT_VERSIONS ${QT_MINOR_VERSION})
-    ENDIF()
-
-    # Scan through list of candidate paths
-    foreach(_PATH ${QT_PATHS})
-        if (EXISTS ${_PATH})
-	# Scan though list of available version
-        foreach(_VERSION ${QT_VERSIONS})
-            if(NOT QT_FOUND)
-                MESSAGE(STATUS "Searching for Qt5.${_VERSION} in ${_PATH}")
-                setup_qt(5 ${_VERSION} ${_PATH})
-            endif()
-        endforeach()
-        endif()
-
-    endforeach()
-ENDMACRO()
-
 # Qt5 Setup
-MACRO(setup_qt MAJOR_VERSION MINOR_VERSION FOLDER)
+MACRO(setup_qt)
     SET(_moc ${CMAKE_SOURCE_DIR}/moc )
 
   SET(QT_FOUND FALSE)
-  SET(QT_PATH ${FOLDER})
-  SET(QT_MINOR_VERSION ${MINOR_VERSION})
-  SET(QT_MAJOR_VERSION ${MAJOR_VERSION})
-  SET(QT_VERSION "${MAJOR_VERSION}.${MINOR_VERSION}")
+  SET(QT_VERSION "${QT_MAJOR_VERSION}.${QT_MINOR_VERSION}")
 
   IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set(QT5_LOCATION "${FOLDER}/${QT_VERSION}/clang_64")
-    include_directories(${FOLDER}/${QT_VERSION}/Src/qtbase/include)
+    set(Qt5_LOCATION "${QT_PATH}/${QT_VERSION}/clang_64")
   ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
   IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    set(QT5_LOCATION "${FOLDER}/${QT_VERSION}/gcc_64")
+    set(Qt5_LOCATION "${QT_PATH}/${QT_VERSION}/gcc_64")
   ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-  set(QT_QMAKE_EXECUTABLE "${QT5_LOCATION}/bin/qmake" )
-  set(QT_MOC_EXECUTABLE "${QT5_LOCATION}/bin/moc"  )
-  set(QT_RCC_EXECUTABLE "${QT5_LOCATION}/bin/rcc" )
-  set(QT_UIC_EXECUTABLE "${QT5_LOCATION}/bin/uic" )
-  set(QT_INCLUDE_DIR "${QT5_LOCATION}/include" )
-  set(QT_LIBRARY_DIR "${QT5_LOCATION}/lib" )
+  set(QT_QMAKE_EXECUTABLE "${Qt5_LOCATION}/bin/qmake" )
+  set(QT_MOC_EXECUTABLE "${Qt5_LOCATION}/bin/moc"  )
+  set(QT_RCC_EXECUTABLE "${Qt5_LOCATION}/bin/rcc" )
+  set(QT_UIC_EXECUTABLE "${Qt5_LOCATION}/bin/uic" )
+  set(QT_INCLUDE_DIR "${Qt5_LOCATION}/include" )
+  set(QT_LIBRARY_DIR "${Qt5_LOCATION}/lib" )
   
   FOREACH(LIB icui18n icuuc icudata ) 
-        MESSAGE(STATUS  "${QT_LIBRARY_DIR}/lib${LIB}.so.${QT_MAJOR_VERSION}${QT_MINOR_VERSION}.1")
         INSTALL(FILES
             "${QT_LIBRARY_DIR}/lib${LIB}.so.${QT_MAJOR_VERSION}${QT_MINOR_VERSION}"
             RENAME "lib${LIB}.so.${QT_MAJOR_VERSION}${QT_MINOR_VERSION}"
@@ -198,7 +134,7 @@ MACRO(setup_qt MAJOR_VERSION MINOR_VERSION FOLDER)
         )
     ENDFOREACH(LIB)
 
-  if(IS_DIRECTORY ${QT5_LOCATION})
+  if(IS_DIRECTORY ${Qt5_LOCATION})
     MESSAGE(STATUS "Using Qt ${QT_VERSION}")
 
     if (NOT DEFINED QT_MODULES)
@@ -223,27 +159,27 @@ MACRO(setup_qt MAJOR_VERSION MINOR_VERSION FOLDER)
 
     set(QT_FOUND TRUE)
   elseif()
-    unset(QT5_LOCATION)
+    unset(Qt5_LOCATION)
   endif()
+  
+  IF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+    ADD_DEFINITIONS("-DQT_DEBUG")
+  ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+
+  IF(${CMAKE_BUILD_TYPE} MATCHES "Release")
+    ADD_DEFINITIONS("-DQT_NO_DEBUG_OUTPUT -DQT_NO_WARNING_OUTPUT")
+  ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Release")
  
 ENDMACRO()
 
-IF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-  ADD_DEFINITIONS("-DQT_DEBUG")
-ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-
-IF(${CMAKE_BUILD_TYPE} MATCHES "Release")
-  ADD_DEFINITIONS("-DQT_NO_DEBUG_OUTPUT -DQT_NO_WARNING_OUTPUT")
-ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Release")
 
 ################################
-if(DEFINED QT_PATH)
-    setup_qt(5 6 ${QT_PATH})
-else()
-    detect_qt()
-endif()
+setup_qt()
 
 if(NOT QT_FOUND)
-    MESSAGE(FATAL_ERROR "Qt Framework was not found. You might set QT_PATH manually.")
+  MESSAGE(FATAL_ERROR "\
+  Qt Framework was not found in ${QT_PATH}. You might set the absolute path QT_PATH manually: \n \
+  \tcmake . -DQT_PATH=/absolute/path/to/qt \n \
+  Qt is looked up by default in $ENV{HOME}/Qt . \
+  ") 
 endif()
-

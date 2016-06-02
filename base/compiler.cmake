@@ -27,6 +27,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ################################################################################
 
+# Set default compiler flags for C and C++
 MACRO(cm8kr_common_cxx_flags)
   ADD_DEFINITIONS(-fPIC -fsigned-char -Wall -Wno-missing-braces)
 
@@ -57,7 +58,7 @@ MACRO(cm8kr_common_cxx_flags)
   IF (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     ADD_DEFINITIONS(-ferror-limit=5 -fcolor-diagnostics -fdiagnostics-show-template-tree  -Wno-deprecated )
   ENDIF()
-ENDMACRO(common_cxx_flags)
+ENDMACRO()
 
 
 # Find compile with version number
