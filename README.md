@@ -19,3 +19,4 @@ It holds several preassumption for a source repository:
   * There is a plugin system, which automatically makes shared objects for plugins
 * A source repository can have multiple libraries, which are located in
   in src/lib by default, can be changed with variable CM8KR_LIBRARY_SOURCE_PATH
+

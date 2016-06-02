@@ -56,21 +56,25 @@ MACRO(find_qt5_component COMPONENT_NAME)
     include_directories(${QT_INCLUDE_DIR}/Qt${COMPONENT_NAME})
 
     # Set module as install target
-    INSTALL(FILES
-        "${QT_LIBRARY_DIR}/libQt5${COMPONENT_NAME}.so.${QT_VERSION}.0"
-        RENAME "libQt5${COMPONENT_NAME}.so.${QT_MAJOR_VERSION}"
-        DESTINATION ${CM8KR_INSTALL_PATH}/lib
-    )
+    #   INSTALL(
+    #   FILES
+    #    "${QT_LIBRARY_DIR}/libQt5${COMPONENT_NAME}.so.${QT_VERSION}.0"
+    #    RENAME "libQt5${COMPONENT_NAME}.so.${QT_MAJOR_VERSION}"
+    #    DESTINATION ${CM8KR_INSTALL_PATH}/lib
+    #)
   ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
   if (${COMPONENT_NAME} MATCHES "Widgets")
     set(Qt5${COMPONENT_NAME}_UIC_EXECUTABLE ${Qt5_LOCATION}/bin/uic)
+    
+    # We need add -DQT_WIDGETS_LIB when using QtWidgets in Qt 5.
+    add_definitions(${Qt5Widgets_DEFINITIONS})
   endif (${COMPONENT_NAME} MATCHES "Widgets")
-
 
 ENDMACRO(find_qt5_component COMPONENT_NAME)
 
 MACRO (deploy_qt)
+  return()
    IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
     # X Server support
@@ -118,6 +122,10 @@ MACRO(setup_qt)
   IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(Qt5_LOCATION "${QT_PATH}/${QT_VERSION}/gcc_64")
   ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+  
+  if(NOT IS_DIRECTORY ${Qt5_LOCATION})
+    return()
+  endif()
 
   set(QT_QMAKE_EXECUTABLE "${Qt5_LOCATION}/bin/qmake" )
   set(QT_MOC_EXECUTABLE "${Qt5_LOCATION}/bin/moc"  )
@@ -126,41 +134,39 @@ MACRO(setup_qt)
   set(QT_INCLUDE_DIR "${Qt5_LOCATION}/include" )
   set(QT_LIBRARY_DIR "${Qt5_LOCATION}/lib" )
   
+  MESSAGE(STATUS "Using Qt ${QT_VERSION}")
+
+
+
   FOREACH(LIB icui18n icuuc icudata ) 
-        INSTALL(FILES
-            "${QT_LIBRARY_DIR}/lib${LIB}.so.${QT_MAJOR_VERSION}${QT_MINOR_VERSION}"
-            RENAME "lib${LIB}.so.${QT_MAJOR_VERSION}${QT_MINOR_VERSION}"
-            DESTINATION ${CM8KR_INSTALL_PATH}/lib
-        )
-    ENDFOREACH(LIB)
-
-  if(IS_DIRECTORY ${Qt5_LOCATION})
-    MESSAGE(STATUS "Using Qt ${QT_VERSION}")
-
-    if (NOT DEFINED QT_MODULES)
-      set(QT_MODULES "")
-      LIST(APPEND QT_MODULES "Core")
-      LIST(APPEND QT_MODULES "Gui")
-      LIST(APPEND QT_MODULES "Widgets")
-      LIST(APPEND QT_MODULES "OpenGL")
+    if (EXISTS "${QT_LIBRARY_DIR}/lib${LIB}.so.${QT_MAJOR_VERSION}${QT_MINOR_VERSION}")
+      MESSAGE("${LIB} found.")
     endif()
+    #    INSTALL(FILES
+    #      "${QT_LIBRARY_DIR}/lib${LIB}.so.${QT_MAJOR_VERSION}${QT_MINOR_VERSION}"
+    #        RENAME "lib${LIB}.so.${QT_MAJOR_VERSION}${QT_MINOR_VERSION}"
+    #        DESTINATION ${CM8KR_INSTALL_PATH}/lib
+    #  )
+  ENDFOREACH(LIB)
 
-    foreach(QT_MODULE ${QT_MODULES})
-      message(STATUS "Using Qt Module: ${QT_MODULE}")
-      find_qt5_component(${QT_MODULE})
-    endforeach()
-
-    # The Qt5Widgets_INCLUDES also includes the include directories for
-    # dependencies QtCore and QtGui
-    include_directories(${QT_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/moc)
-
-    # We need add -DQT_WIDGETS_LIB when using QtWidgets in Qt 5.
-    add_definitions(${Qt5Widgets_DEFINITIONS})
-
-    set(QT_FOUND TRUE)
-  elseif()
-    unset(Qt5_LOCATION)
+  if (NOT DEFINED QT_MODULES)
+    set(QT_MODULES "")
+    LIST(APPEND QT_MODULES "Core")
+    LIST(APPEND QT_MODULES "Gui")
+    LIST(APPEND QT_MODULES "Widgets")
+    LIST(APPEND QT_MODULES "OpenGL")
   endif()
+
+  foreach(QT_MODULE ${QT_MODULES})
+    message(STATUS "Using Qt Module: ${QT_MODULE}")
+    find_qt5_component(${QT_MODULE})
+  endforeach()
+
+  # The Qt5Widgets_INCLUDES also includes the include directories for
+  # dependencies QtCore and QtGui
+  include_directories(${QT_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/moc)
+
+
   
   IF(${CMAKE_BUILD_TYPE} MATCHES "Debug")
     ADD_DEFINITIONS("-DQT_DEBUG")
@@ -169,6 +175,8 @@ MACRO(setup_qt)
   IF(${CMAKE_BUILD_TYPE} MATCHES "Release")
     ADD_DEFINITIONS("-DQT_NO_DEBUG_OUTPUT -DQT_NO_WARNING_OUTPUT")
   ENDIF(${CMAKE_BUILD_TYPE} MATCHES "Release")
+  
+  set(QT_FOUND TRUE)
  
 ENDMACRO()
 

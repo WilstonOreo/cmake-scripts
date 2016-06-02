@@ -164,6 +164,8 @@ ENDMACRO()
 
 
 MACRO(cm8kr_mainapp BUILD_TARGET)
+
+  SET(CM8KR_MAINAPP ${BUILD_TARGET})
   SET(${BUILD_TARGET}_IS_MAIN_APP YES)
 
   # Set main include dir headers source as build target sources

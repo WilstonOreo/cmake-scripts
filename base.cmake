@@ -29,17 +29,15 @@
 
 # Option macro for option variables with default arguments
 MACRO(cm8kr_option VAR DESCRIPTION DEFAULT)
+  # CMake option() macro when default value is ON or OFF
   if (("${DEFAULT}" STREQUAL "ON") OR ("${DEFAULT}" STREQUAL "OFF")) 
     option(${VAR} ${DESCRIPTION} ${DEFAULT})
     return()
   endif()
 
-  MESSAGE(${VAR} ${${VAR}})
-  if (NOT "${${VAR}}" STREQUAL "")
-    MESSAGE("Option set ${${VAR}}")
+  if ("${${VAR}}" STREQUAL "")
     SET(${VAR} ${DEFAULT} CACHE STRING ${DESCRIPTION})
   else()
-    MESSAGE("Option set to default ${${VAR}}")
     SET(${VAR} ${${VAR}} CACHE STRING ${DESCRIPTION})
   endif()
 ENDMACRO()
@@ -92,6 +90,17 @@ cm8kr_option(CM8KR_DEPLOYMENT_RESOURCE_PATH
   "Path containing deployment resource files"
   ${CM8KR_MAINAPP_SOURCE_PATH}/data
 )
+
+
+
+# when building, don't use the install RPATH already
+# (but later on when installing)
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+
+# don't add the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+
 
 # Get CMake Macro path from current file (nice hack)
 if ("${CM8KR_PATH}" STREQUAL "")
