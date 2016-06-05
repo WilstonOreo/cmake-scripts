@@ -27,26 +27,24 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ################################################################################
 
-option(OPENCV_PATH "Path to OpenCV source" ${CMAKE_SOURCE_DIR}/../opencv-3.0.0)
+option(OpenCV_PATH "Path to OpenCV source" ${CMAKE_SOURCE_DIR}/../opencv-3.0.0)
 
 MACRO(cm8kr_setup_opencv_module module_name)
-    include_directories(${OPENCV_PATH}/modules/${module_name}/include )
-    set(OPENCV_${module_name}_LIB ${OPENCV_LIBRARY_PATH}/libopencv_${module_name}.dylib)
+    include_directories(${OpenCV_PATH}/modules/${module_name}/include )
+    set(OpenCV_${module_name}_LIB ${OpenCV_LIBRARY_PATH}/libopencv_${module_name}.dylib)
 
     if(${module_name} STREQUAL "hal")
-        set(OPENCV_${module_name}_LIB ${OPENCV_LIBRARY_PATH}/libopencv_${module_name}.a)
+        set(OpenCV_${module_name}_LIB ${OpenCV_LIBRARY_PATH}/libopencv_${module_name}.a)
     endif()
 ENDMACRO()
 
 
+MESSAGE(STATUS "OpenCV in path: ${OpenCV_PATH}")
 
-set(OPENCV_LIBRARY_PATH ${OPENCV_ROOT}/lib)
-set(OPENCV_INCLUDE_PATH ${OPENCV_ROOT}/include)
-link_directories(${OPENCV_LIBRARY_PATH})
-include_directories(${OPENCV_INCLUDE_PATH})
+set(OpenCV_LIBRARY_PATH ${OpenCV_PATH}/lib)
+set(OpenCV_INCLUDE_PATH ${OpenCV_PATH}/include ${OpenCV_PATH})
+link_directories(${OpenCV_LIBRARY_PATH})
+include_directories(${OpenCV_INCLUDE_PATH})
 
-setup_opencv_module(core)
-setup_opencv_module(hal)
-setup_opencv_module(imgcodecs)
-setup_opencv_module(imgproc)
-setup_opencv_module(photo)
+cm8kr_setup_opencv_module(core)
+cm8kr_setup_opencv_module(hal)

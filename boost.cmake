@@ -27,9 +27,12 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ################################################################################
 
-MACRO(setup_boost major_version minor_version modules)
+INCLUDE(FindBoost)
 
-  SET(BOOST_DIR ${CMAKE_SOURCE_DIR}/../boost_${major_version}_${minor_version}_0 )
+MACRO(cm8kr_setup_boost major_version minor_version modules)
+  if (NOT BOOST_DIR)
+    SET(BOOST_DIR ${CMAKE_SOURCE_DIR}/../boost_${major_version}_${minor_version}_0 )
+  endif()
 
   # MacOSX Setup
   IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -54,5 +57,7 @@ MACRO(setup_boost major_version minor_version modules)
     # Qt Fix on Ubuntu 12.04 / osx works fine with it as well
     ADD_DEFINITIONS( "-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED")
     ADD_DEFINITIONS( "-DBOOST_PP_VARIADICS " )
+
+    MESSAGE(STATUS "Found boost ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
   ENDIF()
-ENDMACRO(setup_boost major_version minor_version)
+ENDMACRO()

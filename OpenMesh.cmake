@@ -28,14 +28,14 @@
 ################################################################################
 
 cm8kr_option(
-    OPENMESH_PATH "Path to OpenMesh source" 
+    OpenMesh_PATH "Path to OpenMesh source" 
     ${CMAKE_SOURCE_DIR}/../OpenMesh
 )
 
-set(OPENMESH_LIBRARY_PATH ${OPENMESH_PATH}/build/Build/lib)
-set(OPENMESH_INCLUDE_PATH ${OPENMESH_PATH}/src)
-link_directories(${OPENMESH_LIBRARY_PATH})
-include_directories(${OPENMESH_INCLUDE_PATH})
+set(OpenMesh_LIBRARY_PATH ${OpenMesh_PATH}/build/Build/lib)
+set(OpenMesh_INCLUDE_PATH ${OpenMesh_PATH}/src)
+link_directories(${OpenMesh_LIBRARY_PATH})
+include_directories(${OpenMesh_INCLUDE_PATH})
 
-set(OPENMESH_CORE_LIB ${OPENMESH_LIBRARY_PATH}/libOpenMeshCore.dylib)
-set(OPENMESH_TOOLS_LIB ${OPENMESH_LIBRARY_PATH}/libOpenMeshTools.dylib)
+set(OpenMesh_CORE_LIB ${OpenMesh_LIBRARY_PATH}/libOpenMeshCore.dylib)
+set(OpenMesh_TOOLS_LIB ${OpenMesh_LIBRARY_PATH}/libOpenMeshTools.dylib)

@@ -30,15 +30,17 @@
 # Option macro for option variables with default arguments
 MACRO(cm8kr_option VAR DESCRIPTION DEFAULT)
   # CMake option() macro when default value is ON or OFF
-  if (("${DEFAULT}" STREQUAL "ON") OR ("${DEFAULT}" STREQUAL "OFF")) 
+  if (("${DEFAULT}" STREQUAL "ON") OR ("${DEFAULT}" STREQUAL "OFF"))
     option(${VAR} ${DESCRIPTION} ${DEFAULT})
     return()
   endif()
 
   if ("${${VAR}}" STREQUAL "")
     SET(${VAR} ${DEFAULT} CACHE STRING ${DESCRIPTION})
+    SET(${VAR} ${DEFAULT})
   else()
     SET(${VAR} ${${VAR}} CACHE STRING ${DESCRIPTION})
+    SET(${VAR} "${${VAR}}")
   endif()
 ENDMACRO()
 
@@ -60,33 +62,33 @@ MACRO (cm8kr_import ${ARGN})
 ENDMACRO()
 
 
-cm8kr_option(CM8KR_PATH 
+cm8kr_option(CM8KR_PATH
   "Directory with cm8kr environment" "")
 
 # Set debug build mode by default
-cm8kr_option(CMAKE_BUILD_TYPE 
+cm8kr_option(CMAKE_BUILD_TYPE
   "Debug or Release build type" "Debug")
 
 
 # Set install directory (used for linux at the moment only)
 # to /usr/share/ by default
-cm8kr_option(CM8KR_INSTALL_PATH 
-  "Install directory" 
+cm8kr_option(CM8KR_INSTALL_PATH
+  "Install directory"
   share/${CMAKE_PROJECT_NAME})
 
 # Library source directory of project
-cm8kr_option(CM8KR_LIBRARY_SOURCE_PATH 
-  "Library source directory of project"     
+cm8kr_option(CM8KR_LIBRARY_SOURCE_PATH
+  "Library source directory of project"
   ${CMAKE_SOURCE_DIR}/src/lib )
 
   # Main application source directory
-cm8kr_option(CM8KR_MAINAPP_SOURCE_PATH 
+cm8kr_option(CM8KR_MAINAPP_SOURCE_PATH
   "Main application source path"
   ${CMAKE_SOURCE_DIR}/src/app )
 
 # Set path directory with deployment files (icons etc)
 # to ${CMAKE_SOURCE_DIR}/deployment_files by default
-cm8kr_option(CM8KR_DEPLOYMENT_RESOURCE_PATH 
+cm8kr_option(CM8KR_DEPLOYMENT_RESOURCE_PATH
   "Path containing deployment resource files"
   ${CM8KR_MAINAPP_SOURCE_PATH}/data
 )
@@ -95,7 +97,7 @@ cm8kr_option(CM8KR_DEPLOYMENT_RESOURCE_PATH
 
 # when building, don't use the install RPATH already
 # (but later on when installing)
-SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
 # don't add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
@@ -173,4 +175,3 @@ cm8kr_import(
 if(EXISTS ${abs_module_path}/build.cmake)
   include(${abs_module_path}/build.cmake)
 endif()
-
