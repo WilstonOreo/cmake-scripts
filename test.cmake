@@ -27,29 +27,18 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ################################################################################
 
-cm8kr_option(OpenCV_PATH "Path to OpenCV source" "${CMAKE_SOURCE_DIR}/../opencv")
+cm8kr_option(CM8KR_TEST_PATH "Directory containing sources of tests" 
+  ${CMAKE_SOURCE_DIR}/src/test )
 
-MACRO(cm8kr_setup_opencv_module module_name)
-    include_directories(${OpenCV_PATH}/modules/${module_name}/include )
+MACRO(cm8kr_add_test BUILD_TARGET ARGS)
+  enable_testing()
 
-    IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-      set(OpenCV_${module_name}_LIB ${OpenCV_LIBRARY_PATH}/libopencv_${module_name}.dylib)
-    ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-      set(OpenCV_${module_name}_LIB ${OpenCV_LIBRARY_PATH}/libopencv_${module_name}.so)
-    ENDIF()
+  add_executable(${BUILD_TARGET} ${CM8KR_TEST_PATH}/${BUILD_TARGET}.cpp )
 
-    if(${module_name} STREQUAL "hal")
-        set(OpenCV_${module_name}_LIB ${OpenCV_LIBRARY_PATH}/libopencv_${module_name}.a)
-    endif()
+  if (${BUILD_TARGET}_LIBRARIES) 
+    target_link_libraries(${BUILD_TARGET} ${${BUILD_TARGET}_LIBRARIES} )
+  endif()
+
+  add_test(${BUILD_TARGET} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD_TARGET} ${ARGS})
 ENDMACRO()
 
-
-MESSAGE(STATUS "OpenCV in path: ${OpenCV_PATH}")
-
-set(OpenCV_LIBRARY_PATH ${OpenCV_PATH}/lib)
-set(OpenCV_INCLUDE_PATH ${OpenCV_PATH}/include ${OpenCV_PATH})
-link_directories(${OpenCV_LIBRARY_PATH})
-include_directories(${OpenCV_INCLUDE_PATH})
-
-cm8kr_setup_opencv_module(core)
-cm8kr_setup_opencv_module(hal)

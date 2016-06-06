@@ -184,7 +184,7 @@ ENDMACRO()
 ################################
 setup_qt()
 
-if(NOT QT_FOUND)
+if(QT_FOUND EQUAL FALSE)
   MESSAGE(FATAL_ERROR "\
   Qt Framework was not found in ${QT_PATH}. You might set the absolute path QT_PATH manually: \n \
   \tcmake . -DQT_PATH=/absolute/path/to/qt \n \

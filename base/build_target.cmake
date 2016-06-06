@@ -31,6 +31,15 @@
 # with a predefined and fixed directory structure.
 # Build in Qt support is activated when QT_FOUND is defined.
 
+
+MACRO(cm8kr_postsetup_build_target BUILD_TARGET SOURCE_PATH )
+  if(EXISTS ${SOURCE_PATH}/postbuild.cmake)
+    include(${SOURCE_PATH}/postbuild.cmake)
+  endif()
+ENDMACRO()
+
+
+# Scan for files for BUILD_TARGET in SOURCE_PATH
 MACRO(cm8kr_setup_build_target BUILD_TARGET SOURCE_PATH)
   SET(${BUILD_TARGET}_PATH ${SOURCE_PATH})
 
@@ -131,6 +140,8 @@ MACRO(cm8kr_add_shared_library BUILD_TARGET SOURCE_PATH)
         target_link_libraries(${BUILD_TARGET} ${${BUILD_TARGET}_FRAMEWORKS} )
     endif()
   ENDIF()
+
+  cm8kr_postsetup_build_target(${BUILD_TARGET} ${SOURCE_PATH})
 ENDMACRO()
 
 # Make build target for executable, is NOT installed by default
@@ -160,6 +171,8 @@ MACRO(cm8kr_add_executable BUILD_TARGET SOURCE_PATH)
   ENDIF()
 
   target_compile_definitions(${BUILD_TARGET} PRIVATE ${${BUILD_TARGET}_DEFINITIONS})
+  
+  cm8kr_postsetup_build_target(${BUILD_TARGET} ${SOURCE_PATH})
 ENDMACRO()
 
 
